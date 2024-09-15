@@ -30,14 +30,12 @@ func Store() sessions.Store {
 	return gothic.Store
 }
 
-/*
-BeginAuthHandler is a convenience handler for starting the authentication process.
-It expects to be able to get the name of the provider from the query parameters
-as either "provider" or ":provider".
+// BeginAuthHandler is a convenience handler for starting the authentication process.
+// It expects to be able to get the name of the provider from the query parameters
+// as either "provider" or ":provider".
 
-BeginAuthHandler will redirect the user to the appropriate authentication end-point
-for the requested provider.
-*/
+// BeginAuthHandler will redirect the user to the appropriate authentication end-point
+// for the requested provider.
 func BeginAuthHandler(e echo.Context) error {
 	url, err := GetAuthURL(e)
 	if err != nil {
@@ -61,16 +59,14 @@ var GetState = func(e echo.Context) string {
 	return gothic.GetState(e.Request())
 }
 
-/*
-GetAuthURL starts the authentication process with the requested provided.
-It will return a URL that should be used to send users to.
+// GetAuthURL starts the authentication process with the requested provided.
+// It will return a URL that should be used to send users to.
 
-It expects to be able to get the name of the provider from the query parameters
-as either "provider" or ":provider".
+// It expects to be able to get the name of the provider from the query parameters
+// as either "provider" or ":provider".
 
-I would recommend using the BeginAuthHandler instead of doing all of these steps
-yourself, but that's entirely up to you.
-*/
+// I would recommend using the BeginAuthHandler instead of doing all of these steps
+// yourself, but that's entirely up to you.
 func GetAuthURL(e echo.Context) (string, error) {
 
 	// get the provider name
@@ -105,14 +101,12 @@ func GetAuthURL(e echo.Context) (string, error) {
 	return url, err
 }
 
-/*
-CompleteUserAuth does what it says on the tin. It completes the authentication
-process and fetches all of the basic information about the user from the provider.
+// CompleteUserAuth does what it says on the tin. It completes the authentication
+// process and fetches all of the basic information about the user from the provider.
 
-It expects to be able to get the name of the provider from the query parameters
-as either "provider" or ":provider".
-*/
-var CompleteUserAuth = func(e echo.Context) (goth.User, error) {
+// It expects to be able to get the name of the provider from the query parameters
+// as either "provider" or ":provider".
+func CompleteUserAuth(e echo.Context) (goth.User, error) {
 
 	// ensure that the user is logged out after the request
 	defer func() {

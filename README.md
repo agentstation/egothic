@@ -23,6 +23,7 @@ Package egothic is a modified version of original gothic package for the Echo se
 
 - [Variables](<#variables>)
 - [func BeginAuthHandler\(e echo.Context\) error](<#BeginAuthHandler>)
+- [func CompleteUserAuth\(e echo.Context\) \(goth.User, error\)](<#CompleteUserAuth>)
 - [func GetAuthURL\(e echo.Context\) \(string, error\)](<#GetAuthURL>)
 - [func GetFromSession\(e echo.Context, key string\) \(string, error\)](<#GetFromSession>)
 - [func Logout\(e echo.Context\) error](<#Logout>)
@@ -32,73 +33,6 @@ Package egothic is a modified version of original gothic package for the Echo se
 
 
 ## Variables
-
-<a name="CompleteUserAuth"></a>CompleteUserAuth does what it says on the tin. It completes the authentication process and fetches all of the basic information about the user from the provider.
-
-It expects to be able to get the name of the provider from the query parameters as either "provider" or ":provider".
-
-```go
-var CompleteUserAuth = func(e echo.Context) (goth.User, error) {
-
-    defer func() {
-
-        _ = Logout(e)
-    }()
-
-    providerName, err := GetProviderName(e)
-    if err != nil {
-        return goth.User{}, err
-    }
-
-    provider, err := goth.GetProvider(providerName)
-    if err != nil {
-        return goth.User{}, err
-    }
-
-    value, err := GetFromSession(e, providerName)
-    if err != nil {
-        return goth.User{}, err
-    }
-
-    sess, err := provider.UnmarshalSession(value)
-    if err != nil {
-        return goth.User{}, err
-    }
-
-    err = validateState(e, sess)
-    if err != nil {
-        return goth.User{}, err
-    }
-
-    user, err := provider.FetchUser(sess)
-    if err == nil {
-
-        return user, err
-    }
-
-    params := e.Request().URL.Query()
-
-    if params.Encode() == "" && e.Request().Method == postHTTPMethod {
-        err = e.Request().ParseForm()
-        if err != nil {
-            return goth.User{}, err
-        }
-        params = e.Request().Form
-    }
-
-    _, err = sess.Authorize(provider, params)
-    if err != nil {
-        return goth.User{}, err
-    }
-
-    if err = StoreInSession(e, providerName, sess.Marshal()); err != nil {
-        return goth.User{}, err
-    }
-
-    gu, err := provider.FetchUser(sess)
-    return gu, err
-}
-```
 
 <a name="GetProviderName"></a>GetProviderName is a function used to get the name of a provider for a given request. By default, this provider is fetched from the URL query string. If you provide it in a different way, assign your own function to this variable that returns the provider name for your request.
 
@@ -123,31 +57,34 @@ var SetState = func(e echo.Context) string {
 ```
 
 <a name="BeginAuthHandler"></a>
-## func [BeginAuthHandler](<https://github.com/agentstation/egothic/blob/master/egothic.go#L41>)
+## func [BeginAuthHandler](<https://github.com/agentstation/egothic/blob/master/egothic.go#L39>)
 
 ```go
 func BeginAuthHandler(e echo.Context) error
 ```
 
-BeginAuthHandler is a convenience handler for starting the authentication process. It expects to be able to get the name of the provider from the query parameters as either "provider" or ":provider".
-
 BeginAuthHandler will redirect the user to the appropriate authentication end\-point for the requested provider.
 
+<a name="CompleteUserAuth"></a>
+## func [CompleteUserAuth](<https://github.com/agentstation/egothic/blob/master/egothic.go#L109>)
+
+```go
+func CompleteUserAuth(e echo.Context) (goth.User, error)
+```
+
+It expects to be able to get the name of the provider from the query parameters as either "provider" or ":provider".
+
 <a name="GetAuthURL"></a>
-## func [GetAuthURL](<https://github.com/agentstation/egothic/blob/master/egothic.go#L74>)
+## func [GetAuthURL](<https://github.com/agentstation/egothic/blob/master/egothic.go#L70>)
 
 ```go
 func GetAuthURL(e echo.Context) (string, error)
 ```
 
-GetAuthURL starts the authentication process with the requested provided. It will return a URL that should be used to send users to.
-
-It expects to be able to get the name of the provider from the query parameters as either "provider" or ":provider".
-
 I would recommend using the BeginAuthHandler instead of doing all of these steps yourself, but that's entirely up to you.
 
 <a name="GetFromSession"></a>
-## func [GetFromSession](<https://github.com/agentstation/egothic/blob/master/egothic.go#L243>)
+## func [GetFromSession](<https://github.com/agentstation/egothic/blob/master/egothic.go#L237>)
 
 ```go
 func GetFromSession(e echo.Context, key string) (string, error)
@@ -156,7 +93,7 @@ func GetFromSession(e echo.Context, key string) (string, error)
 GetFromSession retrieves a previously\-stored value from the session. If no value has previously been stored at the specified key, it will return an error.
 
 <a name="Logout"></a>
-## func [Logout](<https://github.com/agentstation/egothic/blob/master/egothic.go#L218>)
+## func [Logout](<https://github.com/agentstation/egothic/blob/master/egothic.go#L212>)
 
 ```go
 func Logout(e echo.Context) error
@@ -183,7 +120,7 @@ func Store() sessions.Store
 Store returns the store for the gothic session.
 
 <a name="StoreInSession"></a>
-## func [StoreInSession](<https://github.com/agentstation/egothic/blob/master/egothic.go#L237>)
+## func [StoreInSession](<https://github.com/agentstation/egothic/blob/master/egothic.go#L231>)
 
 ```go
 func StoreInSession(e echo.Context, key string, value string) error
