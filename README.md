@@ -1,0 +1,2 @@
+# egothic
+Gothic for Echo
