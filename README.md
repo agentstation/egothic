@@ -31,6 +31,7 @@ Package egothic is a modified version of original gothic package for the Echo se
 - [func Store\(\) sessions.Store](<#Store>)
 - [func StoreInSession\(e echo.Context, key string, value string\) error](<#StoreInSession>)
 - [type Options](<#Options>)
+  - [func WithDebug\(\) Options](<#WithDebug>)
   - [func WithLogger\(logger \*log.Logger\) Options](<#WithLogger>)
 
 
@@ -55,14 +56,6 @@ var GetState = func(e echo.Context) string {
 ```go
 var SetState = func(e echo.Context) string {
     return gothic.SetState(e.Request())
-}
-```
-
-<a name="WithDebug"></a>WithDebug enables the debug mode for the egothic package.
-
-```go
-var WithDebug = func(c *egothicConfig) {
-    c.debug = true
 }
 ```
 
@@ -147,8 +140,17 @@ Options is a function that configures the egothic package.
 type Options func(*egothicConfig)
 ```
 
+<a name="WithDebug"></a>
+### func [WithDebug](<https://github.com/agentstation/egothic/blob/master/options.go#L39>)
+
+```go
+func WithDebug() Options
+```
+
+WithDebug enables the debug mode for the egothic package.
+
 <a name="WithLogger"></a>
-### func [WithLogger](<https://github.com/agentstation/egothic/blob/master/options.go#L44>)
+### func [WithLogger](<https://github.com/agentstation/egothic/blob/master/options.go#L46>)
 
 ```go
 func WithLogger(logger *log.Logger) Options

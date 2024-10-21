@@ -36,8 +36,10 @@ func (c *egothicConfig) log(msg string) {
 }
 
 // WithDebug enables the debug mode for the egothic package.
-var WithDebug = func(c *egothicConfig) {
-	c.debug = true
+func WithDebug() Options {
+	return func(c *egothicConfig) {
+		c.debug = true
+	}
 }
 
 // WithLogger sets the logger for the egothic package.
