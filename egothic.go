@@ -5,6 +5,7 @@ package egothic
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"net/url"
 
@@ -36,8 +37,8 @@ func Store() sessions.Store {
 
 // BeginAuthHandler will redirect the user to the appropriate authentication end-point
 // for the requested provider.
-func BeginAuthHandler(e echo.Context) error {
-	url, err := GetAuthURL(e)
+func BeginAuthHandler(e echo.Context, opts ...Options) error {
+	url, err := GetAuthURL(e, opts...)
 	if err != nil {
 		return err
 	}
@@ -67,37 +68,50 @@ var GetState = func(e echo.Context) string {
 
 // I would recommend using the BeginAuthHandler instead of doing all of these steps
 // yourself, but that's entirely up to you.
-func GetAuthURL(e echo.Context) (string, error) {
+func GetAuthURL(e echo.Context, opts ...Options) (string, error) {
+
+	// apply options
+	config := newConfig(opts...)
 
 	// get the provider name
+	config.log("Getting provider name")
 	providerName, err := GetProviderName(e)
 	if err != nil {
 		return "", err
 	}
-
+	config.log("Provider name: " + providerName)
 	// get the provider
+	config.log("Getting provider")
 	provider, err := goth.GetProvider(providerName)
 	if err != nil {
 		return "", err
 	}
+	config.log("Provider found")
 
 	// begin the authentication process
+	config.log("Beginning authentication process by setting state")
 	sess, err := provider.BeginAuth(SetState(e))
 	if err != nil {
 		return "", err
 	}
+	config.log("Authentication state set")
 
 	// get the auth URL
+	config.log("Getting auth URL")
 	url, err := sess.GetAuthURL()
 	if err != nil {
 		return "", err
 	}
+	config.log("Auth URL: " + url)
 
 	// store the session data
+	config.log("Storing session data")
 	err = StoreInSession(e, providerName, sess.Marshal())
 	if err != nil {
 		return "", err
 	}
+	config.log("Session data stored")
+
 	return url, err
 }
 
@@ -106,7 +120,10 @@ func GetAuthURL(e echo.Context) (string, error) {
 
 // It expects to be able to get the name of the provider from the query parameters
 // as either "provider" or ":provider".
-func CompleteUserAuth(e echo.Context) (goth.User, error) {
+func CompleteUserAuth(e echo.Context, opts ...Options) (goth.User, error) {
+
+	// apply options
+	config := newConfig(opts...)
 
 	// ensure that the user is logged out after the request
 	defer func() {
@@ -115,67 +132,89 @@ func CompleteUserAuth(e echo.Context) (goth.User, error) {
 	}()
 
 	// get the provider name
+	config.log("Getting provider name")
 	providerName, err := GetProviderName(e)
 	if err != nil {
 		return goth.User{}, err
 	}
+	config.log("Provider name: " + providerName)
 
 	// get the provider
+	config.log("Getting provider")
 	provider, err := goth.GetProvider(providerName)
 	if err != nil {
 		return goth.User{}, err
 	}
+	config.log("Provider found")
 
 	// get the session data
+	config.log("Getting session data")
 	value, err := GetFromSession(e, providerName)
 	if err != nil {
 		return goth.User{}, err
 	}
+	config.log("Session data found")
 
 	// unmarshal the session data
+	config.log("Unmarshalling session data")
 	sess, err := provider.UnmarshalSession(value)
 	if err != nil {
 		return goth.User{}, err
 	}
+	config.log("Session data unmarshalled")
 
 	// validate the state token
+	config.log("Validating state token")
 	err = validateState(e, sess)
 	if err != nil {
 		return goth.User{}, err
 	}
+	config.log("State token validated")
 
 	// fetch the user
+	config.log("Fetching user")
 	user, err := provider.FetchUser(sess)
 	if err == nil {
 		// user can be found with existing session data
 		return user, err
 	}
+	config.log(fmt.Sprintf("User fetched: %+v", user))
 
 	// get the query parameters from the request
+	config.log("Getting query parameters from request")
 	params := e.Request().URL.Query()
+	config.log(fmt.Sprintf("Query parameters: %+v", params))
 
 	// if the request is a POST, parse the form data
 	if params.Encode() == "" && e.Request().Method == postHTTPMethod {
+		config.log("Parsing form data")
 		err = e.Request().ParseForm()
 		if err != nil {
 			return goth.User{}, err
 		}
 		params = e.Request().Form
+		config.log(fmt.Sprintf("Form data: %+v", params))
 	}
 
 	// get new token and retry fetch
+	config.log("Getting new token and retrying fetch")
 	_, err = sess.Authorize(provider, params)
 	if err != nil {
 		return goth.User{}, err
 	}
+	config.log("New token and retry fetch successful")
 
 	// store the new session data
+	config.log("Storing new session data")
 	if err = StoreInSession(e, providerName, sess.Marshal()); err != nil {
 		return goth.User{}, err
 	}
+	config.log("New session data stored")
 
 	// fetch the user
+	config.log("Fetching user")
 	gu, err := provider.FetchUser(sess)
+	config.log(fmt.Sprintf("User fetched: %+v", gu))
 	return gu, err
 }
 

@@ -22,14 +22,16 @@ Package egothic is a modified version of original gothic package for the Echo se
 ## Index
 
 - [Variables](<#variables>)
-- [func BeginAuthHandler\(e echo.Context\) error](<#BeginAuthHandler>)
-- [func CompleteUserAuth\(e echo.Context\) \(goth.User, error\)](<#CompleteUserAuth>)
-- [func GetAuthURL\(e echo.Context\) \(string, error\)](<#GetAuthURL>)
+- [func BeginAuthHandler\(e echo.Context, opts ...Options\) error](<#BeginAuthHandler>)
+- [func CompleteUserAuth\(e echo.Context, opts ...Options\) \(goth.User, error\)](<#CompleteUserAuth>)
+- [func GetAuthURL\(e echo.Context, opts ...Options\) \(string, error\)](<#GetAuthURL>)
 - [func GetFromSession\(e echo.Context, key string\) \(string, error\)](<#GetFromSession>)
 - [func Logout\(e echo.Context\) error](<#Logout>)
 - [func SetStore\(store sessions.Store\)](<#SetStore>)
 - [func Store\(\) sessions.Store](<#Store>)
 - [func StoreInSession\(e echo.Context, key string, value string\) error](<#StoreInSession>)
+- [type Options](<#Options>)
+  - [func WithLogger\(logger \*log.Logger\) Options](<#WithLogger>)
 
 
 ## Variables
@@ -56,35 +58,43 @@ var SetState = func(e echo.Context) string {
 }
 ```
 
-<a name="BeginAuthHandler"></a>
-## func [BeginAuthHandler](<https://github.com/agentstation/egothic/blob/master/egothic.go#L39>)
+<a name="WithDebug"></a>WithDebug enables the debug mode for the egothic package.
 
 ```go
-func BeginAuthHandler(e echo.Context) error
+var WithDebug = func(c *egothicConfig) {
+    c.debug = true
+}
+```
+
+<a name="BeginAuthHandler"></a>
+## func [BeginAuthHandler](<https://github.com/agentstation/egothic/blob/master/egothic.go#L40>)
+
+```go
+func BeginAuthHandler(e echo.Context, opts ...Options) error
 ```
 
 BeginAuthHandler will redirect the user to the appropriate authentication end\-point for the requested provider.
 
 <a name="CompleteUserAuth"></a>
-## func [CompleteUserAuth](<https://github.com/agentstation/egothic/blob/master/egothic.go#L109>)
+## func [CompleteUserAuth](<https://github.com/agentstation/egothic/blob/master/egothic.go#L123>)
 
 ```go
-func CompleteUserAuth(e echo.Context) (goth.User, error)
+func CompleteUserAuth(e echo.Context, opts ...Options) (goth.User, error)
 ```
 
 It expects to be able to get the name of the provider from the query parameters as either "provider" or ":provider".
 
 <a name="GetAuthURL"></a>
-## func [GetAuthURL](<https://github.com/agentstation/egothic/blob/master/egothic.go#L70>)
+## func [GetAuthURL](<https://github.com/agentstation/egothic/blob/master/egothic.go#L71>)
 
 ```go
-func GetAuthURL(e echo.Context) (string, error)
+func GetAuthURL(e echo.Context, opts ...Options) (string, error)
 ```
 
 I would recommend using the BeginAuthHandler instead of doing all of these steps yourself, but that's entirely up to you.
 
 <a name="GetFromSession"></a>
-## func [GetFromSession](<https://github.com/agentstation/egothic/blob/master/egothic.go#L237>)
+## func [GetFromSession](<https://github.com/agentstation/egothic/blob/master/egothic.go#L276>)
 
 ```go
 func GetFromSession(e echo.Context, key string) (string, error)
@@ -93,7 +103,7 @@ func GetFromSession(e echo.Context, key string) (string, error)
 GetFromSession retrieves a previously\-stored value from the session. If no value has previously been stored at the specified key, it will return an error.
 
 <a name="Logout"></a>
-## func [Logout](<https://github.com/agentstation/egothic/blob/master/egothic.go#L212>)
+## func [Logout](<https://github.com/agentstation/egothic/blob/master/egothic.go#L251>)
 
 ```go
 func Logout(e echo.Context) error
@@ -102,7 +112,7 @@ func Logout(e echo.Context) error
 Logout invalidates a user session.
 
 <a name="SetStore"></a>
-## func [SetStore](<https://github.com/agentstation/egothic/blob/master/egothic.go#L24>)
+## func [SetStore](<https://github.com/agentstation/egothic/blob/master/egothic.go#L25>)
 
 ```go
 func SetStore(store sessions.Store)
@@ -111,7 +121,7 @@ func SetStore(store sessions.Store)
 SetStore sets the store for the gothic session.
 
 <a name="Store"></a>
-## func [Store](<https://github.com/agentstation/egothic/blob/master/egothic.go#L29>)
+## func [Store](<https://github.com/agentstation/egothic/blob/master/egothic.go#L30>)
 
 ```go
 func Store() sessions.Store
@@ -120,13 +130,31 @@ func Store() sessions.Store
 Store returns the store for the gothic session.
 
 <a name="StoreInSession"></a>
-## func [StoreInSession](<https://github.com/agentstation/egothic/blob/master/egothic.go#L231>)
+## func [StoreInSession](<https://github.com/agentstation/egothic/blob/master/egothic.go#L270>)
 
 ```go
 func StoreInSession(e echo.Context, key string, value string) error
 ```
 
 StoreInSession stores a specified key/value pair in the session.
+
+<a name="Options"></a>
+## type [Options](<https://github.com/agentstation/egothic/blob/master/options.go#L9>)
+
+Options is a function that configures the egothic package.
+
+```go
+type Options func(*egothicConfig)
+```
+
+<a name="WithLogger"></a>
+### func [WithLogger](<https://github.com/agentstation/egothic/blob/master/options.go#L44>)
+
+```go
+func WithLogger(logger *log.Logger) Options
+```
+
+WithLogger sets the logger for the egothic package.
 
 Generated by [gomarkdoc](<https://github.com/princjef/gomarkdoc>)
 
