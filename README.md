@@ -106,7 +106,7 @@ func Logout(e echo.Context) error
 Logout invalidates a user session.
 
 <a name="Redirect"></a>
-## func [Redirect](<https://github.com/agentstation/egothic/blob/master/redirect.go#L46>)
+## func [Redirect](<https://github.com/agentstation/egothic/blob/master/redirect.go#L16>)
 
 ```go
 func Redirect(e echo.Context, url string, opts ...Options) error

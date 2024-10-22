@@ -16,21 +16,23 @@ const redirectHTMLTemplate = `<html><head><meta http-equiv="refresh" content="0;
 func Redirect(e echo.Context, url string, opts ...Options) error {
 	config := newConfig(opts...)
 
-	if url == "" {
-		config.log("Error: Empty URL provided for redirect")
-		return fmt.Errorf("empty URL provided for redirect")
-	}
-
 	// Set headers to prevent caching
 	e.Response().Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
 	e.Response().Header().Set("Pragma", "no-cache")
 	e.Response().Header().Set("Expires", "0")
 
+	if url == "" {
+		config.log("Error: Empty URL provided for redirect")
+		return e.String(http.StatusBadRequest, "Empty URL provided for redirect")
+	}
+
 	// Attempt server-side redirect first
 	config.log("Redirecting to '" + url + "'")
-	if err := e.Redirect(http.StatusSeeOther, url); err == nil {
-		config.log("Server-side redirect to '" + url + "' succeeded")
-		return nil
+	if e.Request().Header.Get("X-Force-HTML-Redirect") != "true" {
+		if err := e.Redirect(http.StatusSeeOther, url); err == nil {
+			config.log("Server-side redirect to '" + url + "' succeeded")
+			return nil
+		}
 	}
 	config.log("Server-side redirect to '" + url + "' failed")
 
