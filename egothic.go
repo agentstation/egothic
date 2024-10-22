@@ -6,7 +6,6 @@ package egothic
 import (
 	"errors"
 	"fmt"
-	"net/http"
 	"net/url"
 
 	"github.com/gorilla/sessions"
@@ -42,7 +41,7 @@ func BeginAuthHandler(e echo.Context, opts ...Options) error {
 	if err != nil {
 		return err
 	}
-	return e.Redirect(http.StatusTemporaryRedirect, url)
+	return Redirect(e, url, opts...)
 }
 
 // SetState sets the state string associated with the given request.
