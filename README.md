@@ -106,13 +106,13 @@ func Logout(e echo.Context) error
 Logout invalidates a user session.
 
 <a name="Redirect"></a>
-## func [Redirect](<https://github.com/agentstation/egothic/blob/master/redirect.go#L43>)
+## func [Redirect](<https://github.com/agentstation/egothic/blob/master/redirect.go#L46>)
 
 ```go
 func Redirect(e echo.Context, url string, opts ...Options) error
 ```
 
-
+Redirect redirects the user to the given URL. This method attempts to avoid browser caching by setting appropriate headers. It attempts a server\-side redirect first, and if that fails, it sends a page with JavaScript redirect.
 
 <a name="SetStore"></a>
 ## func [SetStore](<https://github.com/agentstation/egothic/blob/master/egothic.go#L24>)

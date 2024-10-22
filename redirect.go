@@ -40,6 +40,9 @@ func optimizeTemplate(template string) string {
 	return strings.TrimSpace(optimized)
 }
 
+// Redirect redirects the user to the given URL.
+// This method attempts to avoid browser caching by setting appropriate headers.
+// It attempts a server-side redirect first, and if that fails, it sends a page with JavaScript redirect.
 func Redirect(e echo.Context, url string, opts ...Options) error {
 	config := newConfig(opts...)
 
